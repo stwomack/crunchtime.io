@@ -1,0 +1,20 @@
+#!/usr/bin/env node
+var debug = require('debug')('crunchtime.io');
+var app = require('../app');
+
+app.set('port', process.env.PORT || 3000);
+
+var io = require('socket.io').listen(app.listen(app.get('port'), function() {
+  debug('Express server listening on port ' + app.get('port'));
+  io.sockets.on('connection', function (socket) {
+    socket.emit('msg-srv', { message: 'Welcome to crunchtime.io!', username: 'Crunchtime.io System Message' });
+    /*
+    setInterval(function () {
+      socket.emit('message', { message: 'welcome to the chat' });
+    }, 1000);
+    */
+    socket.on('msg-cli', function (data) {
+      io.sockets.emit('msg-srv', data);
+    });
+  });
+}));

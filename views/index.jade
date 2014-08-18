@@ -1,0 +1,24 @@
+extends layout
+
+block content
+  .container
+  form.form-inline(data-bind='visible: !username()', role='form')
+    .form-group
+      label.sr-only(for='username') Username
+      input.form-control(data-bind='value: username', type='text', id='username', placeholder='Enter username')
+    button.btn.btn-default(type='button') Sign in
+  .panel.panel-default(data-bind='visible: username')
+    .panel-heading
+      h3.panel-title
+        span= title
+        .pull-right
+          span(data-bind='css: connectionStatus')
+    .panel-body
+      ul.list-group(data-bind='foreach:messages')
+        li.list-group-item
+          blockquote
+            p(data-bind='text:message')
+            footer(data-bind='text:username')
+      textarea.form-control(data-bind='value: input', rows='3')
+      button.btn.btn-primary(data-bind='click: send', type='button') Send
+  // /ko
