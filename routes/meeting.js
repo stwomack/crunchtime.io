@@ -1,9 +1,9 @@
 var express = require('express');
 var router = express.Router();
 
-var _ = require('underscore');
-var async = require('async');
+var moment = require('moment');
 var mongoose = require('mongoose');
+
 if(process.env.VCAP_SERVICES){
   var env = JSON.parse(process.env.VCAP_SERVICES);
   console.log('SERVICES:', process.env.VCAP_SERVICES);
@@ -38,56 +38,65 @@ process.on('SIGINT', function() {
 });
 
 var meetingSchema = mongoose.Schema({
+  organizer: String,
   topic: String,
   description: String,
   start_time: Date,
-  end_time: Date,
-  attendees: [{
-    id: Number,
-    email : String,
-    token : String
-  }],
-  messages: [{
-    sequence: Number,
-    author_id: Number,
-    text: String
-  }]
+  end_time: Date
 });
 
 var Meeting = mongoose.model('Meeting', meetingSchema);
 
 /* POST create meeting. */
-router.post('/meeting/:id', function(req, res) {
-  var C = function (callback) {
-    console.log('CREATE');
-    Meeting.create({ string: 'create' }, callback);
-  };
-  res.render('index', { title: 'Crunchtime.io' });
+router.post('/', function(req, res) {
+  console.log('CREATE');
+  Meeting.create({
+    organizer: req.body.email,
+    topic: req.body.topic,
+    description: req.body.description,
+    start_time: moment(),
+    end_time: null
+  }, function (err, result) {
+    if (!!err) {
+      res.send(500, {error:err});
+    } else {
+      res.render('meeting', result); // user needs meeting ID to forward to anyone who wants it
+    }
+  });
 });
 /* GET read meeting. */
-router.post('/meeting/:id', function(req, res) {
-  var R = function (record, callback) {
-    console.log('READ', record);
-    Meeting.findById(record._id, callback);
-  };
+router.get('/:id', function(req, res) {
+  console.log('UPDATE', req.params.id);
+  Meeting.findById(req.params.id, function (err, result) {
+    if (!!err) {
+      res.send(500, {error:err});
+    } else {
+      res.render('meeting', result);
+    }
+  });
 });
 /* PUT update meeting. */
-router.post('/meeting/:id', function(req, res) {
-  var U = function (record, callback) {
-    console.log('UPDATE', record);
-    Meeting.findByIdAndUpdate(record._id, {string: 'update'}, callback);
-  };
+router.put('/:id', function(req, res) {
+  console.log('UPDATE', req.params.id);
+  Meeting.findByIdAndUpdate(req.params.id, {
+    end_time: moment()
+  }, function (err, result) {
+    if (!!err) {
+      res.send(500, {error:err});
+    } else {
+      res.render('meeting', result);
+    }
+  });
 });
 /* DELETE delete meeting. */
-router.post('/meeting/:id', function(req, res) {
-  var D = function (record, callback) {
-    console.log('DELETE', record);
-    Meeting.findByIdAndRemove(record._id, callback);
-  };
+router.delete('/:id', function(req, res) {
+  console.log('DELETE', req.params.id);
+  Meeting.findByIdAndRemove(req.params.id, function (err, result) {
+    if (!!err) {
+      res.send(500, {error:err});
+    } else {
+      res.render('meeting', result);
+    }
+  });
 });
-
-router.get('/meeting/:id', function(req, res) {
-  res.render('index', { title: 'Crunchtime.io' });
-});
-
 module.exports = router;
