@@ -5,9 +5,9 @@ var moment = require('moment');
 var mongoose = require('mongoose');
 
 if(process.env.VCAP_SERVICES){
-  var env = JSON.parse(process.env.VCAP_SERVICES);
-  console.log('SERVICES:', process.env.VCAP_SERVICES);
-  var mongo_url = env.mongolab.credentials.uri;
+  var vcap_services = JSON.parse(process.env.VCAP_SERVICES)
+  console.log('SERVICES:', vcap_services);
+  var mongo_uri = vcap_services.mongolab[0].credentials.uri
 } else {
   var mongo_url = 'mongodb://localhost/meetings';
 }
