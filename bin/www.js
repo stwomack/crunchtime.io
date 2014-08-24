@@ -19,7 +19,6 @@ var io = require('socket.io').listen(app.listen(app.get('port'), function() {
     socket.on('msg-cli', function (data) {
         console.log("socket.on msg-cli:", data);
         chatExchange.publish('messages', data);
-        console.log("should have just sent it to the broker", data);
     });
     
     /**
