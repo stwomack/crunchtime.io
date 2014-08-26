@@ -5,7 +5,15 @@ var amqp = require('amqp');
 
 app.set('port', process.env.PORT || 3000);
 
-var rabbitConn = amqp.createConnection({});
+var rabbitConn;
+if(process.env.VCAP_SERVICES){
+  var env = JSON.parse(process.env.VCAP_SERVICES);
+  var cloudamqp_uri = env.cloudamqp[0].credentials.uri;
+  rabbitConn = amqp.createConnection({url: cloudamqp_uri});
+} else {
+  rabbitConn = amqp.createConnection({});
+}
+
 var chatExchange;
 rabbitConn.on('ready', function () {
     chatExchange = rabbitConn.exchange('chatExchange', {'type': 'fanout'});
@@ -33,7 +41,8 @@ var io = require('socket.io').listen(app.listen(app.get('port'), function() {
 	 * create NEW queue for every connection
 	 */
     rabbitConn.queue('', {exclusive: true}, function (q) {
-        //Bind to chatExchange w/ "#" or "" binding key to listen to all messages.
+        // Bind to chatExchange w/ "#" or "" binding key to listen to all
+		// messages.
         q.bind('chatExchange', "");
         
     	// Subscribe When a message comes, send it back to browser
